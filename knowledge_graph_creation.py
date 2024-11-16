@@ -1,171 +1,155 @@
-import os
+from langchain_community.graphs import Neo4jGraph
 import json
-from py2neo import Graph, Node, Relationship
+import re
+from dotenv import load_dotenv
+import os
 
-# Neo4j connection details from environment variables
-NEO4J_URI='neo4j+s://165b338b.databases.neo4j.io'
-NEO4J_USERNAME='neo4j'
-NEO4J_PASSWORD='hDXIVCazyWlH9WyFiUvIIN71m_U7BKwmYxYpLwWCqww'
-AURA_INSTANCEID='165b338b'
-AURA_INSTANCENAME='Instance02'
+load_dotenv()
 
-# Connect to Neo4j
-graph = Graph(NEO4J_URI, auth=(NEO4J_USERNAME, NEO4J_PASSWORD))
+neo4j_uri = os.getenv("NEO4J_URI")
+neo4j_username = os.getenv("NEO4J_USERNAME")
+neo4j_password = os.getenv("NEO4J_PASSWORD")
+neo4j_database = os.getenv("NEO4J_DATABASE")
 
-# Mapping dictionary to standardize JSON keys to ontology keys
-KEY_MAPPING = {
-    # Engine
-    "Engine Type": "engine_type",
-    "No. of cylinders": "cylinders",
-    "Displacement": "displacement",
-    "Power": "power",
-    "Torque": "torque",
+graph = Neo4jGraph(url=neo4j_uri, username=neo4j_username, password=neo4j_password)
 
-    # Transmission
-    "Drive Type": "drive_type",
-    "Gear Box": "gearbox",
-    "Transmission Type": "trans_type",
+# Utility to clean JSON keys
+def clean_key(key):
+    return re.sub(r'[^a-zA-Z0-9_]', '_', key)
 
-    # Fuel
-    "Fuel Type": "type",
-    "Mileage (ARAI)": "mileage",
-    "Fuel Tank Capacity": "capacity",
-    "BS Type": "bs_type",
-
-    # Dimension
-    "Length": "length",
-    "Width": "width",
-    "Height": "height",
-    "Ground Clearance (Laden)": "ground_clearance_laden",
-    "Ground Clearance Unladen": "ground_clearance_unladen",
-    "Wheelbase": "wheel_base",
-    "Kerb Weight": "kerb_weight",
-    "Gross Weight": "gross_weight",
-
-    # Brake
-    "Front Brake Type": "front_type",
-    "Rear Brake Type": "rear_type",
-
-    # Suspension
-    "Front Suspension": "front",
-    "Rear Suspension": "rear",
-
-    # Steering
-    "Steering Type": "type",
-    "Steering Column": "column",
-    "Turning Radius": "radius",
-
-    # Capacity
-    "Seating Capacity": "seating_capacity",
-    "Boot Space": "boot_space",
-    "No. of Doors": "no_of_doors",
-
-    # Wheel
-    "Wheel Type": "wheel_type",
-    "Tyre Size": "tyre_size",
-    "Tyre Type": "tyre_type",
-    "Wheel Size": "wheel_size",
-
-    # Price
-    "Ex-Showroom Price": "ex_showroom",
-
-    # Entertainment
-    "Connectivity": "connectivity",
-    "Android Auto": "android_auto",
-    "Apple CarPlay": "car_play",
-    "No. of Speakers": "no_of_speakers",
-    "Touchscreen Size": "touchscreen_size",
-
-    # Safety
-    "ABS": "abs",
-    "No. of Airbags": "no_of_airbags",
-    "Hill Assist": "hill_assist",
-    "NCAP Rating": "ncap_rating",
-    "ADAS": "adas",
-
-    # Features
-    "Power Steering": "power_steering",
-    "Air Conditioner": "air_conditioner"
-}
-
-# Function to map keys based on KEY_MAPPING dictionary
-def map_keys(specs, key_mapping):
-    mapped_specs = {}
-    for key, value in specs.items():
-        mapped_key = key_mapping.get(key, key)  # Use mapped key if available, else original key
-        mapped_specs[mapped_key] = value
-
-    # Add placeholders for specific keys if missing
-    for expected_key in ["engine_type", "wheel_size", "ground_clearance_unladen"]:
-        if expected_key not in mapped_specs:
-            mapped_specs[expected_key] = "Unknown"  # Set default value as "Unknown"
-
-    return mapped_specs
-
-# Function to create nodes and relationships based on ontology
-def create_knowledge_graph(data):
-    for brand_name, models in data.items():
-        if not brand_name:
-            continue
-
-        # Create Brand node
-        brand_node = Node("Brand", name=brand_name)
-        graph.merge(brand_node, "Brand", "name")
-
-        for model in models:
-            model_url = model.get("model_url", "Unknown")
-            model_node = Node("Model", url=model_url)
-            graph.merge(model_node, "Model", "url")
-
-            # Relationship: Brand -> Model
-            graph.merge(Relationship(brand_node, "HAS_MODEL", model_node))
-
-            for variant in model["variants"]:
-                variant_name = variant.get("variant_name")
-                if not variant_name:
-                    continue
-
-                price = variant.get("price", "Unknown")
-                variant_node = Node("Variant", name=variant_name, price=price)
-                graph.merge(variant_node, "Variant", "name")
-
-                # Relationship: Model -> Variant
-                graph.merge(Relationship(model_node, "HAS_VARIANT", variant_node))
-
-                # Create nodes for each specification category
-                for spec_category, specs in variant["specifications"].items():
-                    category_name = spec_category.replace(" ", "_")
-                    if not category_name:
-                        continue
-
-                    # Create or merge the category node
-                    category_node = Node(category_name, name=category_name)
-                    graph.merge(category_node, category_name, "name")
-
-                    # Relationship: Variant -> Spec Category
-                    graph.merge(Relationship(variant_node, f"HAS_{spec_category.upper()}", category_node))
-
-                    # Map the keys in specs based on the KEY_MAPPING dictionary
-                    mapped_specs = map_keys(specs, KEY_MAPPING)
-                    
-                    # Add attributes to the category node based on mapped keys
-                    for spec_key, spec_value in mapped_specs.items():
-                        if spec_value is not None:  # Only set non-null values
-                            category_node[spec_key] = spec_value
-                    graph.push(category_node)
-
-# Function to load data from JSON file
-def load_data(json_file_path):
-    with open(json_file_path, "r", encoding="utf-8") as file:
-        data = json.load(file)
+def clean_json(data):
+    if isinstance(data, dict):
+        return {clean_key(k): clean_json(v) for k, v in data.items()}
+    elif isinstance(data, list):
+        return [clean_json(i) for i in data]
     return data
 
-# Main function to create knowledge graph
-def main(json_file_path):
-    data = load_data(json_file_path)
-    create_knowledge_graph(data)
-    print("Knowledge graph created successfully!")
+# Create constraints
+def create_constraints(graph):
+    graph.query('CREATE CONSTRAINT BRAND_CONSTRAINT IF NOT EXISTS FOR (b:Brand) REQUIRE b.name IS UNIQUE')
+    graph.query('CREATE CONSTRAINT MODEL_CONSTRAINT IF NOT EXISTS FOR (m:Model) REQUIRE m.name IS UNIQUE')
 
-# Provide path to your JSON file
-json_file_path = "formatted_car_data.json"
-main(json_file_path)
+def create_node(graph, label, properties):
+    props = ', '.join(f"{k}: '{v}'" for k, v in properties.items())
+    QUERY = f"MERGE (n:{label} {{{props}}})"
+    graph.query(QUERY)
+
+def create_relationship(graph, node1_label, node1_props, relationship, node2_label, node2_props):
+    node1 = ', '.join(f"{k}: '{v}'" for k, v in node1_props.items())
+    node2 = ', '.join(f"{k}: '{v}'" for k, v in node2_props.items())
+    QUERY = f"""
+    MATCH (a:{node1_label} {{{node1}}})
+    MATCH (b:{node2_label} {{{node2}}})
+    MERGE (a)-[:{relationship}]->(b)
+    """
+    graph.query(QUERY)
+
+# Create Brand and Model nodes
+def create_brand_and_model_nodes(graph, car):
+    brand = car['brand']
+    model = car['model']
+    create_node(graph, "Brand", {"name": brand['name'], "origin": brand['origin']})
+    create_node(graph, "Model", {"name": model['name'], "type": model['type'], "launched": model['launched']})
+    create_relationship(graph, "Brand", {"name": brand['name']}, "HAS_MODEL", "Model", {"name": model['name']})
+
+# Function to create Features node
+def create_features_node(graph, variant):
+    if "features" in variant:
+        try:
+            print(f"Creating Features node for Variant {variant['name']}.")
+            features = json.dumps(variant['features']).replace("'", '"')
+            create_node(graph, "Features", {"details": features})
+            create_relationship(graph, "Variant", {"name": variant['name']}, "HAS_FEATURES", "Features", {"details": features})
+        except Exception as e:
+            print(f"Exception occurred while creating Features node: {e}")
+
+# Create Variant node and related nodes
+def create_variant_nodes(graph, car):
+    model_name = car['model']['name']
+    for variant in car['variant']:
+        create_node(graph, "Variant", {"name": variant['name'], "launched": variant['launched']})
+        create_relationship(graph, "Model", {"name": model_name}, "HAS_VARIANT", "Variant", {"name": variant['name']})
+
+        feature_mapping = {
+            "steering": "Steering",
+            "capacity": "Capacity",
+            "suspension": "Suspension",
+            "brake": "Brake",
+            "dimensions": "Dimensions",
+            "entertainment": "Entertainment",
+            "safety": "Safety",
+            "fuel": "Fuel",
+            "wheel": "Wheel",
+            "price": "Price",
+            "engine": "Engine",
+            "transmission": "Transmission"
+        }
+
+        for key, label in feature_mapping.items():
+            if key in variant:
+                feature_data = variant[key]
+
+                if key == "price" and isinstance(feature_data, dict) and 'ex_showroom' in feature_data:
+                    # Convert ex_showroom price to a numeric value
+                    numeric_price = convert_price_to_number(feature_data['ex_showroom'])
+                    if numeric_price is not None:
+                        feature_data['ex_showroom'] = numeric_price
+
+                if isinstance(feature_data, dict):
+                    create_node(graph, label, feature_data)
+                else:
+                    create_node(graph, label, {"details": json.dumps(feature_data).replace("'", '"')})
+
+                create_relationship(graph, "Variant", {"name": variant['name']}, f"HAS_{label.upper()}", label, feature_data)
+
+        create_features_node(graph, variant)
+
+# convert price to a numeric value
+def convert_price_to_number(price_string):
+    price_string = price_string.lower().replace(",", "").strip()
+
+    # Handle various cases for "crore" and "lakh"
+    if any(term in price_string for term in ["crore", "cr", "crores", "cr.", "crore.", "crores."]):
+        price_string = re.sub(r"crore|crores|cr|cr\.|crore\.|crores\.", "", price_string).strip()
+        try:
+            return int(float(price_string) * 1e7)
+        except ValueError:
+            print(f"Could not convert price: {price_string}")
+            return None
+
+    elif any(term in price_string for term in ["lakh", "lac", "lakh.", "lac.", "lakhs", "lacs"]):
+        price_string = re.sub(r"lakh|lac|lakhs|lacs|lakh\.|lac\.", "", price_string).strip()
+        try:
+            return int(float(price_string) * 1e5)
+        except ValueError:
+            print(f"Could not convert price: {price_string}")
+            return None
+
+    # Handle cases for "rupees" or "rs" or "rs."
+    elif any(term in price_string for term in ["rs.", "rs", "rupees", "rup", "₹"]):
+        price_string = re.sub(r"rs\.|rs|rupees|rup|₹", "", price_string).strip()
+        try:
+            return int(float(price_string))
+        except ValueError:
+            print(f"Could not convert price: {price_string}")
+            return None
+
+    else:
+        try:
+            return int(float(price_string))
+        except ValueError:
+            print(f"Could not convert price: {price_string}")
+            return None
+
+if __name__ == '__main__':
+    with open('formatted_car_data.json', 'r') as f:
+        raw_data = json.load(f)
+
+    json_data = clean_json(raw_data)
+
+    # Create constraints
+    create_constraints(graph)
+
+    for car in json_data:
+        create_brand_and_model_nodes(graph, car)
+        create_variant_nodes(graph, car)
