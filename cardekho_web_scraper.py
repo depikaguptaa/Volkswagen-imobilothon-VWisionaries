@@ -6,7 +6,7 @@ import requests
 from bs4 import BeautifulSoup
 import os
 
-# Define the Base URL and Brand Links
+# the Base URL and Brand Links
 BASE_URL = "https://www.cardekho.com"
 BRANDS = {
     "maruti-suzuki": "pattern1", "toyota": "pattern1", "porsche": "pattern1", "bmw": "pattern1",
@@ -89,11 +89,9 @@ def get_variant_specs(variant_url):
         section_title_tag = section.select_one("h3, h2")
         section_title = section_title_tag.get_text(strip=True) if section_title_tag else "Unknown Section"
         
-        # Skip sections matching any keyword in irrelevant_sections or if empty
         if any(keyword.lower() in section_title.lower() for keyword in irrelevant_sections):
             continue
         
-        # Process the valid sections and add them to specs_data
         section_specs = {}
         rows = section.select("tr")
         
@@ -104,7 +102,6 @@ def get_variant_specs(variant_url):
                 value = cells[1].get_text(strip=True) if cells[1].get_text(strip=True) else "No" if cells[1].find('i', {'class': 'icon-deletearrow'}) else "Yes"
                 section_specs[key] = value
         
-        # Add only non-empty sections to specs_data
         if section_specs:
             specs_data[section_title] = section_specs
 
@@ -115,7 +112,7 @@ def save_to_json(data, filename="car_data.json"):
     temp_filename = f"{filename}.tmp"
     with open(temp_filename, "w", encoding="utf-8") as json_file:
         json.dump(data, json_file, indent=4, ensure_ascii=False)
-    os.replace(temp_filename, filename)  # Atomic rename
+    os.replace(temp_filename, filename)
 
 def main():
     all_data = {}
@@ -137,15 +134,10 @@ def main():
                         "specifications": specs_data
                     }
                     model_data["variants"].append(variant_data)
-
-                    # Save after each variant is processed
                     save_to_json(all_data)
-                
-                time.sleep(random.uniform(2, 5))  # Prevent rapid requests
-
+                time.sleep(random.uniform(2, 5))
             all_data[brand].append(model_data)
 
-    # Final save to ensure everything is written at the end
     save_to_json(all_data)
     print("Data collection complete and saved to car_data.json")
 

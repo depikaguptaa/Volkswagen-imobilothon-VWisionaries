@@ -13,7 +13,7 @@ neo4j_database = os.getenv("NEO4J_DATABASE")
 
 graph = Neo4jGraph(url=neo4j_uri, username=neo4j_username, password=neo4j_password)
 
-# Utility to clean JSON keys
+# clean JSON keys
 def clean_key(key):
     return re.sub(r'[^a-zA-Z0-9_]', '_', key)
 
@@ -24,7 +24,6 @@ def clean_json(data):
         return [clean_json(i) for i in data]
     return data
 
-# Create constraints
 def create_constraints(graph):
     graph.query('CREATE CONSTRAINT BRAND_CONSTRAINT IF NOT EXISTS FOR (b:Brand) REQUIRE b.name IS UNIQUE')
     graph.query('CREATE CONSTRAINT MODEL_CONSTRAINT IF NOT EXISTS FOR (m:Model) REQUIRE m.name IS UNIQUE')
@@ -147,7 +146,6 @@ if __name__ == '__main__':
 
     json_data = clean_json(raw_data)
 
-    # Create constraints
     create_constraints(graph)
 
     for car in json_data:

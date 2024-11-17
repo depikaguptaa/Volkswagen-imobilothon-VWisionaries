@@ -1,0 +1,384 @@
+﻿[
+  {
+    "nodes": [
+      {
+        "identity": -114,
+        "labels": [
+          "Wheel"
+        ],
+        "properties": {
+          "name": "Wheel",
+          "indexes": [],
+          "constraints": []
+        },
+        "elementId": "-114"
+      },
+      {
+        "identity": -105,
+        "labels": [
+          "Steering"
+        ],
+        "properties": {
+          "name": "Steering",
+          "indexes": [],
+          "constraints": []
+        },
+        "elementId": "-105"
+      },
+      {
+        "identity": -110,
+        "labels": [
+          "Entertainment"
+        ],
+        "properties": {
+          "name": "Entertainment",
+          "indexes": [],
+          "constraints": []
+        },
+        "elementId": "-110"
+      },
+      {
+        "identity": -103,
+        "labels": [
+          "Transmission"
+        ],
+        "properties": {
+          "name": "Transmission",
+          "indexes": [],
+          "constraints": []
+        },
+        "elementId": "-103"
+      },
+      {
+        "identity": -107,
+        "labels": [
+          "Suspension"
+        ],
+        "properties": {
+          "name": "Suspension",
+          "indexes": [],
+          "constraints": []
+        },
+        "elementId": "-107"
+      },
+      {
+        "identity": -109,
+        "labels": [
+          "Dimensions"
+        ],
+        "properties": {
+          "name": "Dimensions",
+          "indexes": [],
+          "constraints": []
+        },
+        "elementId": "-109"
+      },
+      {
+        "identity": -100,
+        "labels": [
+          "Brand"
+        ],
+        "properties": {
+          "name": "Brand",
+          "indexes": [],
+          "constraints": [
+            "Constraint( id=3, name='constraint_e10df559', type='UNIQUENESS', schema=(:Brand {name}), ownedIndex=2 )"
+          ]
+        },
+        "elementId": "-100"
+      },
+      {
+        "identity": -102,
+        "labels": [
+          "Variant"
+        ],
+        "properties": {
+          "name": "Variant",
+          "indexes": [],
+          "constraints": []
+        },
+        "elementId": "-102"
+      },
+      {
+        "identity": -106,
+        "labels": [
+          "Capacity"
+        ],
+        "properties": {
+          "name": "Capacity",
+          "indexes": [],
+          "constraints": []
+        },
+        "elementId": "-106"
+      },
+      {
+        "identity": -115,
+        "labels": [
+          "Price"
+        ],
+        "properties": {
+          "name": "Price",
+          "indexes": [],
+          "constraints": []
+        },
+        "elementId": "-115"
+      },
+      {
+        "identity": -112,
+        "labels": [
+          "Fuel"
+        ],
+        "properties": {
+          "name": "Fuel",
+          "indexes": [],
+          "constraints": []
+        },
+        "elementId": "-112"
+      },
+      {
+        "identity": -101,
+        "labels": [
+          "Model"
+        ],
+        "properties": {
+          "name": "Model",
+          "indexes": [],
+          "constraints": [
+            "Constraint( id=5, name='constraint_3e52628b', type='UNIQUENESS', schema=(:Model {name}), ownedIndex=4 )"
+          ]
+        },
+        "elementId": "-101"
+      },
+      {
+        "identity": -113,
+        "labels": [
+          "Features"
+        ],
+        "properties": {
+          "name": "Features",
+          "indexes": [],
+          "constraints": []
+        },
+        "elementId": "-113"
+      },
+      {
+        "identity": -111,
+        "labels": [
+          "Safety"
+        ],
+        "properties": {
+          "name": "Safety",
+          "indexes": [],
+          "constraints": []
+        },
+        "elementId": "-111"
+      },
+      {
+        "identity": -108,
+        "labels": [
+          "Brake"
+        ],
+        "properties": {
+          "name": "Brake",
+          "indexes": [],
+          "constraints": []
+        },
+        "elementId": "-108"
+      },
+      {
+        "identity": -104,
+        "labels": [
+          "Engine"
+        ],
+        "properties": {
+          "name": "Engine",
+          "indexes": [],
+          "constraints": []
+        },
+        "elementId": "-104"
+      }
+    ],
+    "relationships": [
+      {
+        "identity": -101,
+        "start": -101,
+        "end": -102,
+        "type": "HAS_VARIANT",
+        "properties": {
+          "name": "HAS_VARIANT"
+        },
+        "elementId": "-101",
+        "startNodeElementId": "-101",
+        "endNodeElementId": "-102"
+      },
+      {
+        "identity": -114,
+        "start": -102,
+        "end": -104,
+        "type": "HAS_ENGINE",
+        "properties": {
+          "name": "HAS_ENGINE"
+        },
+        "elementId": "-114",
+        "startNodeElementId": "-102",
+        "endNodeElementId": "-104"
+      },
+      {
+        "identity": -108,
+        "start": -102,
+        "end": -111,
+        "type": "HAS_SAFETY",
+        "properties": {
+          "name": "HAS_SAFETY"
+        },
+        "elementId": "-108",
+        "startNodeElementId": "-102",
+        "endNodeElementId": "-111"
+      },
+      {
+        "identity": -103,
+        "start": -102,
+        "end": -106,
+        "type": "HAS_CAPACITY",
+        "properties": {
+          "name": "HAS_CAPACITY"
+        },
+        "elementId": "-103",
+        "startNodeElementId": "-102",
+        "endNodeElementId": "-106"
+      },
+      {
+        "identity": -106,
+        "start": -102,
+        "end": -109,
+        "type": "HAS_DIMENSIONS",
+        "properties": {
+          "name": "HAS_DIMENSIONS"
+        },
+        "elementId": "-106",
+        "startNodeElementId": "-102",
+        "endNodeElementId": "-109"
+      },
+      {
+        "identity": -100,
+        "start": -100,
+        "end": -101,
+        "type": "HAS_MODEL",
+        "properties": {
+          "name": "HAS_MODEL"
+        },
+        "elementId": "-100",
+        "startNodeElementId": "-100",
+        "endNodeElementId": "-101"
+      },
+      {
+        "identity": -104,
+        "start": -102,
+        "end": -107,
+        "type": "HAS_SUSPENSION",
+        "properties": {
+          "name": "HAS_SUSPENSION"
+        },
+        "elementId": "-104",
+        "startNodeElementId": "-102",
+        "endNodeElementId": "-107"
+      },
+      {
+        "identity": -102,
+        "start": -102,
+        "end": -105,
+        "type": "HAS_STEERING",
+        "properties": {
+          "name": "HAS_STEERING"
+        },
+        "elementId": "-102",
+        "startNodeElementId": "-102",
+        "endNodeElementId": "-105"
+      },
+      {
+        "identity": -110,
+        "start": -102,
+        "end": -113,
+        "type": "HAS_FEATURES",
+        "properties": {
+          "name": "HAS_FEATURES"
+        },
+        "elementId": "-110",
+        "startNodeElementId": "-102",
+        "endNodeElementId": "-113"
+      },
+      {
+        "identity": -111,
+        "start": -102,
+        "end": -114,
+        "type": "HAS_WHEEL",
+        "properties": {
+          "name": "HAS_WHEEL"
+        },
+        "elementId": "-111",
+        "startNodeElementId": "-102",
+        "endNodeElementId": "-114"
+      },
+      {
+        "identity": -107,
+        "start": -102,
+        "end": -110,
+        "type": "HAS_ENTERTAINMENT",
+        "properties": {
+          "name": "HAS_ENTERTAINMENT"
+        },
+        "elementId": "-107",
+        "startNodeElementId": "-102",
+        "endNodeElementId": "-110"
+      },
+      {
+        "identity": -105,
+        "start": -102,
+        "end": -108,
+        "type": "HAS_BRAKE",
+        "properties": {
+          "name": "HAS_BRAKE"
+        },
+        "elementId": "-105",
+        "startNodeElementId": "-102",
+        "endNodeElementId": "-108"
+      },
+      {
+        "identity": -113,
+        "start": -102,
+        "end": -103,
+        "type": "HAS_TRANSMISSION",
+        "properties": {
+          "name": "HAS_TRANSMISSION"
+        },
+        "elementId": "-113",
+        "startNodeElementId": "-102",
+        "endNodeElementId": "-103"
+      },
+      {
+        "identity": -109,
+        "start": -102,
+        "end": -112,
+        "type": "HAS_FUEL",
+        "properties": {
+          "name": "HAS_FUEL"
+        },
+        "elementId": "-109",
+        "startNodeElementId": "-102",
+        "endNodeElementId": "-112"
+      },
+      {
+        "identity": -112,
+        "start": -102,
+        "end": -115,
+        "type": "HAS_PRICE",
+        "properties": {
+          "name": "HAS_PRICE"
+        },
+        "elementId": "-112",
+        "startNodeElementId": "-102",
+        "endNodeElementId": "-115"
+      }
+    ]
+  }
+]
